@@ -1,0 +1,2 @@
+# stupid
+A stupid repository.
