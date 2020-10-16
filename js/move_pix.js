@@ -1,40 +1,44 @@
 function begin () {
+  var screen_width = window.innerWidth;
+  var screen_height = window.innerHeight;
+  var vid = document.getElementById('vid');
+
   var cvs = document.getElementById('cvs_pix');
+  cvs.width = '480';
+  cvs.height = '480';
+
   cvs.style.position = 'absolute';
-  cvs.style.top = '100px';
-  //alert(cvs.style.width);
-  cvs.style.width = '-200px';
-  cvs.style.left = '-100px'; //-1 * cvs.style.width.split('px')[0];
+  cvs.style.top = (screen_height / 2) - (cvs.height / 2) + 'px';
+  cvs.style.left = (-1 * cvs.width) + 'px';
+  var end_left = Math.floor((screen_width - cvs.width) / 2);
 
-  show_vid();
-  move_vid();
+  show_vid(vid, cvs);
+
+  slide_vid(cvs, 1, 5, end_left);
+  vid.play();
 }
 
-function show_vid () {
-  var canvas = document.getElementById('cvs_pix');
+// https://stackoverflow.com/questions/4429440/html5-display-video-inside-canvas
+function show_vid (video, canvas) {
   var ctx = canvas.getContext('2d');
-  var video = document.getElementById('vid');
 
-  video.addEventListener('play', function() {
-    var $this = this; //cache
-    (function loop() {
-      if (!$this.paused && !$this.ended) {
-        ctx.drawImage($this, 0, 0);
-        setTimeout(loop, 1000 / 30); // drawing at 30fps
-      }
-    })();
-  }, 0);
+  video.addEventListener('play', () => {
+    function step() {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step);
+  });
 }
 
-async function move_vid (derp) {
-  var cvs = document.getElementById('cvs_pix');
-  
-  for(ii = 0; ii < 10000; ii++) {
-    var left = Number(cvs.style.left.split('px')[0]);
-    var top = Number(cvs.style.top.split('px')[0]);
-    await sleep(100);
-    place_vid(cvs, left + 1, top);
-  }
+async function slide_vid (canvas, direction, speed, end_left) {
+  var top = Number(canvas.style.top.split('px')[0]);
+
+  do {
+    await sleep(speed);
+    place_vid(canvas, left + direction, top);
+    var left = Number(canvas.style.left.split('px')[0]);
+  } while (left != end_left)
 }
 
 function place_vid(vid, x, y) {
